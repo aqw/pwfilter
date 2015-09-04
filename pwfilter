@@ -1,0 +1,219 @@
+#!/bin/sh
+#
+# This file is licensed under the BSD-3-Clause license.
+# See the AUTHORS and LICENSE files for more information.
+
+############
+## Variables
+############
+readonly VERSION=0.3
+readonly SCRIPT_NAME=${0##*/}
+
+# Overriding IFS is the only way to handle spaces in the files without resorting
+# to spawning subshells :-/
+readonly NEWLINE='
+'
+readonly ORIG_IFS=$IFS
+IFS=$NEWLINE
+
+INCLUDE_RANGE=''
+INCLUDE=''
+EXCLUDE=''
+EXCLUDE_RANGE=''
+
+readonly GROUP_FILE='/etc/group'
+readonly PASSWD_FILE='/etc/passwd'
+readonly SHADOW_FILE='/etc/shadow'
+FILE_TO_PARSE=''
+FILE_CONTENTS=''
+SHADOW_TO_PARSE=''
+SHADOW_CONTENTS=''
+
+############
+## FUNCTIONS
+############
+
+Help() {
+    cat << EOF
+$SCRIPT_NAME v${VERSION}
+
+Syntax:
+$SCRIPT_NAME [-h] [-V] |
+             [-e ID ...] [-E ID ID] [-f filename [filename]] [-i ID ...]
+             [-I ID ID] ...
+
+OPTIONS:
+  -e, --exclude ID ...           = Exclude these specific ID(s)
+  -E, --exclude-range ID ID      = Exclude this range of IDs
+  -f, --file filename [filename] = File to parse rather than system default.
+                                   shdwfilter requires both passwd and shadow.
+  -h, --help                     = Print this help and exit
+  -i, --include ID ...           = Include these Specific ID(s)
+  -I, --range ID ID              = Include this range of IDs
+  -V, --version                  = Print the version number and exit
+
+EOF
+}
+
+# return 0 if a desired ID, otherwise 1
+#   - individuals always win over ranges
+#   - when in conflict, exclude wins over include
+#   - ranges are inclusive
+DesiredID() {
+    local uid=$1
+    # TODO: check if int?
+
+    # specified IDs
+    local i
+    for i in $EXCLUDE; do # exclude
+        [ $uid -eq $i ] && return 1
+    done
+    for i in $INCLUDE; do # include
+        [ $uid -eq $i ] && return 0
+    done
+
+    # ranges
+    for i in $EXCLUDE_RANGE; do # exclude
+        [ $uid -ge ${i%-*} ] && [ $uid -le ${i#*-} ] && return 1
+    done
+    for i in $INCLUDE_RANGE; do # include
+        [ $uid -ge ${i%-*} ] && [ $uid -le ${i#*-} ] && return 0
+    done
+
+    # if nothing matches, reject
+    return 1
+}
+
+# print message to stderr and exit 1
+Fatal() {
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+# return 0 if argument is an integer; 1 if not
+IsInt() {
+    [ -z "${1##*[!0-9]*}" ] && return 1 || return 0
+}
+
+#######
+## MAIN
+#######
+
+# functionality changes depending on how the script is called (typically via symlinks)
+case "$SCRIPT_NAME" in
+    grpfilter*)
+        FILE_TO_PARSE=$GROUP_FILE
+        ;;
+    pwfilter*)
+        FILE_TO_PARSE=$PASSWD_FILE
+        ;;
+    shdwfilter*)
+        FILE_TO_PARSE=$PASSWD_FILE
+        SHADOW_TO_PARSE=$SHADOW_FILE
+        ;;
+    *)
+        Fatal "'$SCRIPT_NAME' is an unsupported script name for the pwfilter suite."
+        ;;
+esac
+
+# help out if there are no arguments
+[ -n "$1" ] || { Help; exit 1; }
+
+# parse options and arguments
+while [ -n "$1" ]; do
+    case "$1" in
+        '-h'|'--help'|'')
+            Help
+            exit 0
+            ;;
+        '-V'|'--version')
+            printf '%s v%s\n' "$SCRIPT_NAME" "$VERSION"
+            exit 0
+            ;;
+        '-I'|'--range'|'-E'|'--exclude-range')
+            [ -n "$2" ] && [ -n "$3" ] || Fatal "'$1' requires two arguments."
+            IsInt "$2" && IsInt "$3" || Fatal "Both '$2' and '$3' must be integers."
+            [ $2 -le $3 ] || Fatal "'$2' must be <= '$3'."
+
+            if [ "$1" = '--range' ] || [ "$1" = '-I' ] ; then # include range
+                INCLUDE_RANGE="${INCLUDE_RANGE:+${INCLUDE_RANGE}${NEWLINE}}${2}-${3}"
+            else # exclude range
+                EXCLUDE_RANGE="${EXCLUDE_RANGE:+${EXCLUDE_RANGE}${NEWLINE}}${2}-${3}"
+            fi
+            shift 2
+            ;;
+        '-i'|'--include'|[!-]*) # specific IDs to include
+            while IsInt "$1"; do
+                INCLUDE="${INCLUDE:+${INCLUDE}${NEWLINE}}$1"
+                shift 1
+            done
+            ;;
+        '-e'|'--exclude') # specific IDs to exclude
+            [ -n "$2" ] || Fatal "'$1' requires an argument."
+            while IsInt "$2"; do
+                EXCLUDE="${EXCLUDE:+${EXCLUDE}${NEWLINE}}$2"
+                shift 1
+            done
+            ;;
+        '-f'|'--file') # file to parse
+            [ -n "$2" ] || Fatal "'$1' requires an argument."
+            FILE_TO_PARSE=$2 && shift 1
+
+            # shdwfilter needs both passwd and shadow files
+            if [ -z "${SCRIPT_NAME##shdwfilter*}" ]; then
+                [ -n "$2" ] || Fatal "'$1' requires both passwd and shadow files."
+                SHADOW_TO_PARSE=$2 && shift 1
+            fi
+            ;;
+        -*)
+            Fatal "'$1' is not a valid '$SCRIPT_NAME' option.";;
+    esac
+    [ -n "$1" ] && shift 1 # only shift if there's anything left to shift
+done
+
+#
+# populate *_CONTENTS, either from piped input or file(s)
+#
+# TODO: if -f was set, no piped input should be parsed
+if [ -p /dev/stdin ]; then # piped input
+    [ -z "${SCRIPT_NAME##shdwfilter*}" ] && Fatal "'shdwfilter' cannot handle piped input."
+    while read P_LINE; do
+        FILE_CONTENTS="${FILE_CONTENTS:+${FILE_CONTENTS}${NEWLINE}}${P_LINE}"
+    done
+else # read in the appropriate file(s)
+    [ -r "$FILE_TO_PARSE" ] || Fatal "'$FILE_TO_PARSE' is not readable!"
+    FILE_CONTENTS=`cat "$FILE_TO_PARSE"` || Fatal "Failed to 'cat' file: '$FILE_TO_PARSE'"
+
+    if [ -z "${SCRIPT_NAME##shdwfilter*}" ]; then
+        [ -r "$SHADOW_TO_PARSE" ] || Fatal "'$SHADOW_TO_PARSE' is not readable!"
+        SHADOW_CONTENTS=`cat "$SHADOW_TO_PARSE"` || Fatal "Failed to 'cat' shadow file: '$SHADOW_TO_PARSE'"
+    fi
+fi
+
+#
+# loop over and parse *_CONTENTS;
+# print desirable IDs
+#
+for F_LINE in $FILE_CONTENTS; do
+    # get the third item (UID/GID) in the line
+    first_three=${F_LINE#*:*:}
+    the_id=${first_three%%:*}
+
+    IsInt "$the_id" || Fatal "'$the_id' is not a valid id number."
+    DesiredID "$the_id" || continue
+
+    if [ -z "${SCRIPT_NAME##shdwfilter*}" ]; then
+        user_name=${F_LINE%%:*} # first item (user name) in the passwd line
+        for S_LINE in $SHADOW_CONTENTS; do
+            [ "$user_name" = ${S_LINE%%:*} ] && printf '%s\n' "$S_LINE" && break
+            # believe it or not, the above is actually ~1.4x faster than:
+            # [ -z "${S_LINE##${user_name}:*}" ]
+        done
+        # TODO: If no match, error?
+    else # password- or group-filter
+        printf '%s\n' "$F_LINE"
+    fi
+done
+
+# restore original IFS
+IFS=$ORIG_IFS

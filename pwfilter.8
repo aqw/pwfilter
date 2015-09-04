@@ -1,0 +1,161 @@
+.\" This file is licensed under the BSD\[hy]3\[hy]Clause license.
+.\" See the AUTHORS and LICENSE files for more information.
+.Dd September 4, 2015
+.Dt PWFILTER 8
+.Os \" Current operating system.
+.
+.Sh NAME
+.Nm pwfilter
+.Nd filter passwd, shadow, or group files by UIDs/GIDs
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl h
+.Op Fl V
+|
+.Op Fl e Ar ID ...
+.Op Fl E Ar ID ID
+.Op Fl f Ar filename Op Ar filename
+.Op Fl i Ar ID ...
+.Op Fl I Ar ID ID
+.Ar ...
+.
+.Sh DESCRIPTION
+.Nm
+filters passwd, shadow, or group files according to ID. These can be individual
+IDs or ranges \[em] include or exclude. The full line from the appropriate
+file with be output for each matching ID.
+.Sh COMMANDS
+.Nm
+provides three nearly identical modes of operation.
+.Cm pwfilter ,
+.Cm shdwfilter ,
+and
+.Cm grpfilter .
+.Pp
+All three share the same options, arguments, and features \[em] with a few
+caveats for
+.Cm shdwfilter
+.Pq no piped input, requires two arguments for Fl Fl file
+which are explained in the relevant portions of this manual.
+.
+.Sh Options
+.Bl -tag -width Ds
+.It Fl e , Fl Fl exclude Ar ID ...
+Specific ID(s) to exclude.
+.It Fl E , Fl Fl exclude\-range Ar ID ID
+Range of IDs to exclude.
+.It Fl f , Fl Fl file Ar filename Op Ar filename
+File to parse rather than system default.
+.Cm shdwfilter
+requires both
+.Ar passwd
+and
+.Ar shadow .
+.It Fl h , Fl Fl help
+Print a summary of
+.Nm Ap s
+command\[hy]line options and then exit.
+.It Fl i , Fl Fl include Ar ID ...
+Specific ID(s) to include.
+.It Fl I , Fl Fl range Ar ID ID
+Range of IDs to include.
+.It Fl V , Fl Fl version
+Print the version number and exit.
+.El
+.
+.Sh FILTERING LOGIC
+All IDs are excluded by default. Thus, running
+.Nm
+with no arguments will result in no output.
+Exclude always wins over include and specific IDs always win over ranges. Thus,
+in descending order of priority:
+.Pp
+.Bl -dash -compact -offset 4n
+.It
+exclude ID
+.It
+include ID
+.It
+exclude range
+.It
+include range
+.It
+exclude all
+.El
+.
+.Sh EXIT STATUS
+.Nm
+exits 0 on success and 1 if an error occurs.
+.
+.Sh EXAMPLES
+.Pp
+Groups with a GID of 100 or 1000 <= GID <= 9999.
+.Dl grpfilter \-\-include 100 \-\-range 1000 9999
+.Pp
+Users from local.passwd with a UID >= 10000.
+.Dl pwfilter \-\-file local.passwd \-\-range 10000 65535
+.Pp
+UIDs 0\-999 from piped input.
+.Dl cat local.passwd | pwfilter --range 0 999
+.Pp
+This is a contrived example, but it shows how the cascading works. The result
+will be the shadow entries of UIDs 100\-110, 125, 140\-144, and 146\-150.
+.Dl shdwfilter --range 100 150 --exclude-range 110 140 --include 125 --exclude 145
+.Pp
+Over SSH, in conjunction with a local group file.
+.Dl ssh me@box Qo grpfilter --range 1000 9999 --include 100 Qc > new.group
+.Dl grpfilter --range 0 999 --exclude 100 --range 10000 65535 >> new.group
+.Dl grpck -s new.group
+.
+.Sh CORNER CASES
+When both piped input and the
+.Fl Fl file
+option are provided, the piped input is ignored and the
+.Fl Fl file
+argument is read and parsed.
+.Pp
+.Cm shdwfilter
+cannot accept piped input since it needs to parse two files
+.Pq Ar passwd , shadow
+.
+.Sh BUGS
+.Pp Piping into
+.Nm
+will not work on the rare platforms which do not provide the very common \[em]
+yet surprisingly non\[hy]POSIX \[em] /dev/stdin.
+.Pp
+The piped input detection may not work correctly in some specific SSH
+situations. If you encounter this, try using the
+.Fl Fl file
+option; it should then ignore any phantom piped input.
+.
+.Sh SEE ALSO
+For the purposes of validating and sorting the output of
+.Nm ,
+the use of
+.Xr grpck 8
+and
+.Xr pwck 8
+is
+.Em highly
+recommended.
+.Pp
+The
+.Nm
+repository is available at
+.Lk https://github.com/Alexqw/pwfilter
+Bug reports, patches, and (constructive) input are always welcome.
+.Sh AUTHOR
+.Nm
+was created by
+.An Alex Waite
+.Mt Alexqw85@gmail.com .
+See the AUTHORS file for more information.
+.
+.Sh COPYRIGHT
+.Nm
+is released under the
+.Qq BSD\[hy]3\[hy]Clause License.
+See the LICENSE file for more information.
+.

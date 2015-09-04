@@ -1,0 +1,56 @@
+pwfilter is written assuming a POSIX compliant Bourne shell with additional
+support for the keyword `local` for variable scoping. It also requires the
+POSIX utility `cat` and the non-POSIX /dev/stdin device file. Nearly all *nixes
+should have at least one shell that can run pwfilter.
+
+== Shells Known To Work
+- sh (some modern variants. e.g. FreeBSD's sh)
+- ash (including busybox's)
+- bash
+- dash
+- ksh88
+- lksh
+- mksh
+- pdksh
+- posh
+- zsh
+
+== Bourne Shells Known To Not Work
+- sh (the original AT&T sh)
+  - does not have support for the `local` keyword
+- ksh93
+  - does not have support for the `local` keyword. It /does/ support `typeset`,
+    but typeset does not scope variables locally unless functions are written as
+    "function foo { }" rather than "foo() { }". The former syntax is non-POSIX
+    and causes dash (and I assume other shells too) to choke. Thus, adjusting
+    the function declaration and a simple "alias local=typeset" will not work.
+
+== Shells Which Will Never Be Supported
+This should go without saying, but given that pwfilter is written using Bourne
+shell syntax, it will never be able to run in non-Bourne shells. This includes
+the C shell family (csh, tcsh) and any "exotic" shells like fish.
+
+== Operating System Notes
+Not sure which shell to use? Chances are good on a modern system that the
+default (/bin/sh) will point to a sane and compatible shell.
+
+  *BSD and Linux
+    - the default /bin/sh nearly always works
+    - dash is quite fast; if you have a choice, use it
+    - otherwise, there are many others available via the package manager
+  Solaris 10:
+    - /bin/ksh (which is ksh88) and /bin/bash will work
+  Solaris 11:
+    - /bin/bash (or ksh88 if installed, though it isn't available by default)
+  Other SunOS (Illumos, OmniOS, etc)
+    - /bin/bash or many others available via the package manager
+  OS X
+    - /bin/sh points to bash
+  HP-UX:
+    - does not provide /dev/stdin. Either create a named-pipe at that location
+      or avoid piping input into pwfilter.
+
+== Man Page
+pwfilter's man page is written using mdoc (which is largely based off of roff).
+Most modern unices, with the exception of Solaris, have support to correctly
+display mdoc man pages.
