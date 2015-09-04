@@ -6,7 +6,7 @@
 ############
 ## Variables
 ############
-readonly VERSION=0.3
+readonly VERSION=0.4
 readonly SCRIPT_NAME=${0##*/}
 
 # Overriding IFS is the only way to handle spaces in the files without resorting
@@ -61,24 +61,22 @@ EOF
 #   - when in conflict, exclude wins over include
 #   - ranges are inclusive
 DesiredID() {
-    local uid=$1
-    # TODO: check if int?
+    IsInt "$1" || Fatal "'$1' is not a valid ID number."
 
     # specified IDs
-    local i
     for i in $EXCLUDE; do # exclude
-        [ $uid -eq $i ] && return 1
+        [ $1 -eq $i ] && return 1
     done
     for i in $INCLUDE; do # include
-        [ $uid -eq $i ] && return 0
+        [ $1 -eq $i ] && return 0
     done
 
     # ranges
     for i in $EXCLUDE_RANGE; do # exclude
-        [ $uid -ge ${i%-*} ] && [ $uid -le ${i#*-} ] && return 1
+        [ $1 -ge ${i%-*} ] && [ $1 -le ${i#*-} ] && return 1
     done
     for i in $INCLUDE_RANGE; do # include
-        [ $uid -ge ${i%-*} ] && [ $uid -le ${i#*-} ] && return 0
+        [ $1 -ge ${i%-*} ] && [ $1 -le ${i#*-} ] && return 0
     done
 
     # if nothing matches, reject
@@ -201,7 +199,6 @@ for F_LINE in $FILE_CONTENTS; do
     first_three=${F_LINE#*:*:}
     the_id=${first_three%%:*}
 
-    IsInt "$the_id" || Fatal "'$the_id' is not a valid id number."
     DesiredID "$the_id" || continue
 
     if [ -z "${SCRIPT_NAME##shdwfilter*}" ]; then
