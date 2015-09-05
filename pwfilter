@@ -130,7 +130,7 @@ while [ -n "$1" ]; do
             exit 0
             ;;
         '-I'|'--range'|'-E'|'--exclude-range')
-            [ -n "$2" ] && [ -n "$3" ] || Fatal "'$1' requires two arguments."
+            [ -n "${2##-*}" ] && [ -n "${3##-*}" ] || Fatal "'$1' requires two arguments."
             IsInt "$2" && IsInt "$3" || Fatal "Both '$2' and '$3' must be integers."
             [ $2 -le $3 ] || Fatal "'$2' must be <= '$3'."
 
@@ -148,20 +148,20 @@ while [ -n "$1" ]; do
             done
             ;;
         '-e'|'--exclude') # specific IDs to exclude
-            [ -n "$2" ] || Fatal "'$1' requires an argument."
+            [ -n "${2##-*}" ] || Fatal "'$1' requires an argument."
             while IsInt "$2"; do
                 EXCLUDE="${EXCLUDE:+${EXCLUDE}${NEWLINE}}$2"
                 shift 1
             done
             ;;
         '-f'|'--file') # file to parse
-            [ -n "$2" ] || Fatal "'$1' requires an argument."
+            [ -n "${2##-*}" ] || Fatal "'$1' requires an argument."
             FILE_FLAG='true'
             FILE_TO_PARSE=$2 && shift 1
 
             # shdwfilter needs both passwd and shadow files
             if [ -z "${SCRIPT_NAME##shdwfilter*}" ]; then
-                [ -n "$2" ] || Fatal "'$1' requires both passwd and shadow files."
+                [ -n "${2##-*}" ] || Fatal "'$1' requires both passwd and shadow files."
                 SHADOW_TO_PARSE=$2 && shift 1
             fi
             ;;
