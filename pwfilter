@@ -40,9 +40,8 @@ Help() {
 $SCRIPT_NAME v${VERSION}
 
 Syntax:
-$SCRIPT_NAME [-h] [-V] |
-             [-a ID] [-e ID ...] [-E ID ID] [-f filename [filename]] [-i ID ...]
-             [-I ID ID] ...
+$SCRIPT_NAME [-h] [-V] | [-a ID] [-e ID ...] [-E ID ID] [-f filename [filename]]
+         [-i ID ...] [-I ID ID] ...
 
 OPTIONS:
   -a, --at-and-above ID          = Include IDs above and including this number
