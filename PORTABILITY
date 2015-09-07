@@ -26,8 +26,21 @@ Though, if you have a choice, I recommend dash; it is sane and /very/ fast.
 
 Some older, commercial *nixes (HP-UX, some versions of IRIX, and possibly
 others) do not provide the /dev/stdin device file. Either create a named-pipe at
-that location (with `mkfifo`) or just avoid piping input into pwfilter and rely
-on the --file option for your non-system-default needs.
+that location (`mkfifo`) or just avoid piping input into pwfilter and rely on
+the --file option for your non-system-default needs.
+
+=== High-Digit UIDs
+Traditionally, UIDs/GIDs only went up to 65535; however, some systems allow for
+ranges up to at least 4294967295. Some sysadmins may take advantage of this
+expanded range to match user ids in other directory services.
+
+POSIX states that shell integers must be a signed long; thus, on 32-bit systems
+it's 2147483647 (which is less than 4294967295). Further complicating this, mksh
+limits integers to 32-bit regardless of the architecture, while shells provide
+64-bit integers on 32-bit systems.
+
+Thus, before using pwfilter with UIDs > 2147483647 --- especially on 32-bit
+systems --- please make sure your shell-of-choice supports 64-bit integers.
 
 == Man Page
 pwfilter's man page is written using mdoc (which is largely based off of roff).

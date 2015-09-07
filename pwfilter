@@ -20,6 +20,7 @@ INCLUDE_RANGE=''
 INCLUDE=''
 EXCLUDE=''
 EXCLUDE_RANGE=''
+ABOVE=''
 
 readonly GROUP_FILE='/etc/group'
 readonly PASSWD_FILE='/etc/passwd'
@@ -40,10 +41,11 @@ $SCRIPT_NAME v${VERSION}
 
 Syntax:
 $SCRIPT_NAME [-h] [-V] |
-             [-e ID ...] [-E ID ID] [-f filename [filename]] [-i ID ...]
+             [-a ID] [-e ID ...] [-E ID ID] [-f filename [filename]] [-i ID ...]
              [-I ID ID] ...
 
 OPTIONS:
+  -a, --at-and-above ID          = Include IDs above and including this number
   -e, --exclude ID ...           = Exclude these specific ID(s)
   -E, --exclude-range ID ID      = Exclude this range of IDs
   -f, --file filename [filename] = File to parse rather than system default.
@@ -77,6 +79,11 @@ DesiredID() {
     done
     for i in $INCLUDE_RANGE; do # include
         [ $1 -ge ${i%-*} ] && [ $1 -le ${i#*-} ] && return 0
+    done
+
+    # above (range)
+    for i in $ABOVE; do
+        [ $1 -ge $i ] && return 0
     done
 
     # if nothing matches, reject
@@ -121,7 +128,13 @@ esac
 # parse options and arguments
 while [ -n "$1" ]; do
     case "$1" in
-        '-h'|'--help'|'')
+        '-a'|'--at-and-above')
+            [ -n "${2##-*}" ] || Fatal "'$1' requires an argument."
+            IsInt "$2" || Fatal "'$2' must be an integer."
+            ABOVE="${ABOVE:+${ABOVE}${NEWLINE}}$2"
+            shift 1
+            ;;
+        '-h'|'--help')
             Help
             exit 0
             ;;

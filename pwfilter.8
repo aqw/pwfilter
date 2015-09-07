@@ -13,6 +13,7 @@
 .Op Fl h
 .Op Fl V
 |
+.Op Fl a Ar ID
 .Op Fl e Ar ID ...
 .Op Fl E Ar ID ID
 .Op Fl f Ar filename Op Ar filename
@@ -41,10 +42,12 @@ which are explained in the relevant portions of this manual.
 .
 .Sh Options
 .Bl -tag -width Ds
+.It Fl a , Fl Fl at\-and\-above Ar ID
+Include IDs above and including this number.
 .It Fl e , Fl Fl exclude Ar ID ...
-Specific ID(s) to exclude.
+Exclude these specific ID(s).
 .It Fl E , Fl Fl exclude\-range Ar ID ID
-Range of IDs to exclude.
+Exclude this range of IDs.
 .It Fl f , Fl Fl file Ar filename Op Ar filename
 File to parse rather than system default.
 .Cm shdwfilter
@@ -57,9 +60,9 @@ Print a summary of
 .Nm Ap s
 command\[hy]line options and then exit.
 .It Fl i , Fl Fl include Ar ID ...
-Specific ID(s) to include.
+Include these Specific ID(s).
 .It Fl I , Fl Fl range Ar ID ID
-Range of IDs to include.
+Include this range of IDs.
 .It Fl V , Fl Fl version
 Print the version number and exit.
 .El
@@ -81,6 +84,8 @@ exclude range
 .It
 include range
 .It
+include at\-and\-above
+.It
 exclude all
 .El
 .
@@ -94,18 +99,18 @@ Groups with a GID of 100 or 1000 <= GID <= 9999.
 .Dl grpfilter \-\-include 100 \-\-range 1000 9999
 .Pp
 Users from local.passwd with a UID >= 10000.
-.Dl pwfilter \-\-file local.passwd \-\-range 10000 65535
+.Dl pwfilter \-\-file local.passwd \-\-at\-and\-above 10000
 .Pp
 UIDs 0\-999 from piped input.
-.Dl cat local.passwd | pwfilter --range 0 999
+.Dl cat local.passwd | pwfilter \-\-range 0 999
 .Pp
 This is a contrived example, but it shows how the cascading works. The result
 will be the shadow entries of UIDs 100\-110, 125, 140\-144, and 146\-150.
-.Dl shdwfilter --range 100 150 --exclude-range 110 140 --include 125 --exclude 145
+.Dl shdwfilter \-\-range 100 150 \-\-exclude-range 110 140 \-\-include 125 \-\-exclude 145
 .Pp
 Over SSH, in conjunction with a local group file.
-.Dl ssh me@box Qo grpfilter --range 1000 9999 --include 100 Qc > new.group
-.Dl grpfilter --range 0 999 --exclude 100 --range 10000 65535 >> new.group
+.Dl ssh me@box Qo grpfilter \-\-range 1000 9999 \-\-include 100 Qc > new.group
+.Dl grpfilter \-\-range 0 999 \-\-exclude 100 \-\-at\-and\-above 10000 >> new.group
 .Dl grpck -s new.group
 .
 .Sh CORNER CASES
@@ -129,6 +134,11 @@ The piped input detection may not work correctly in some specific SSH
 situations. If you encounter this, try using the
 .Fl Fl file
 option; it should then ignore any phantom piped input.
+.Pp
+In very uncommon configurations, it is possible to have UIDs that are higher
+than the 32-bit math limit of some shells \[em] e.g. mksh on a 64-bit Debian
+machine. In such situations, please refer to the PORTABILITY file and consider
+using another shell.
 .
 .Sh SEE ALSO
 For the purposes of validating and sorting the output of
