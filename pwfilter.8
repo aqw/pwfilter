@@ -13,6 +13,8 @@
 .Op Fl h
 .Op Fl V
 |
+.Ar ID ...
+|
 .Op Fl a Ar ID
 .Op Fl e Ar ID ...
 .Op Fl E Ar ID ID
@@ -94,6 +96,9 @@ exclude all
 exits 0 on success and 1 if an error occurs.
 .
 .Sh EXAMPLES
+.Pp
+Shorthand syntax, without any options. Users 210, 1000, and 1027.
+.Dl pwfilter 210 1000 1027
 .Pp
 Groups with a GID of 100 or 1000 <= GID <= 9999.
 .Dl grpfilter \-\-include 100 \-\-range 1000 9999

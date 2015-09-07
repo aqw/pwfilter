@@ -6,7 +6,7 @@
 ############
 ## Variables
 ############
-readonly VERSION=0.4
+readonly VERSION=0.5
 readonly SCRIPT_NAME=${0##*/}
 
 # Overriding IFS is the only way to handle spaces in the files without resorting
@@ -40,8 +40,8 @@ Help() {
 $SCRIPT_NAME v${VERSION}
 
 Syntax:
-$SCRIPT_NAME [-h] [-V] | [-a ID] [-e ID ...] [-E ID ID] [-f filename [filename]]
-         [-i ID ...] [-I ID ID] ...
+$SCRIPT_NAME [-h] [-V] | ID ... | [-a ID] [-e ID ...] [-E ID ID]
+         [-f filename [filename]] [-i ID ...] [-I ID ID] ...
 
 OPTIONS:
   -a, --at-and-above ID          = Include IDs above and including this number
@@ -124,6 +124,16 @@ esac
 # help out if there are no arguments
 [ -n "$1" ] || { Help; exit 1; }
 
+# support sans-option syntax (e.g. pwfilter 210 1000 1027)
+while [ -n "${1##-*}" ]; do
+    if IsInt "$1"; then
+        INCLUDE="${INCLUDE:+${INCLUDE}${NEWLINE}}$1"
+        shift 1
+    else
+        Fatal "'$1' is not a valid ID or '$SCRIPT_NAME' option."
+    fi
+done
+
 # parse options and arguments
 while [ -n "$1" ]; do
     case "$1" in
@@ -153,9 +163,10 @@ while [ -n "$1" ]; do
             fi
             shift 2
             ;;
-        '-i'|'--include'|[!-]*) # specific IDs to include
-            while IsInt "$1"; do
-                INCLUDE="${INCLUDE:+${INCLUDE}${NEWLINE}}$1"
+        '-i'|'--include') # specific IDs to include
+            [ -n "${2##-*}" ] || Fatal "'$1' requires an argument."
+            while IsInt "$2"; do
+                INCLUDE="${INCLUDE:+${INCLUDE}${NEWLINE}}$2"
                 shift 1
             done
             ;;
@@ -177,7 +188,7 @@ while [ -n "$1" ]; do
                 SHADOW_TO_PARSE=$2 && shift 1
             fi
             ;;
-        -*)
+        *)
             Fatal "'$1' is not a valid '$SCRIPT_NAME' option.";;
     esac
     [ -n "$1" ] && shift 1 # only shift if there's anything left to shift
