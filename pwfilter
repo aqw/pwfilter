@@ -28,6 +28,7 @@ FILE_TO_PARSE=''
 FILE_CONTENTS=''
 SHADOW_TO_PARSE=''
 SHADOW_CONTENTS=''
+FILE_FLAG='false'
 
 ############
 ## FUNCTIONS
@@ -157,6 +158,7 @@ while [ -n "$1" ]; do
             ;;
         '-f'|'--file') # file to parse
             [ -n "$2" ] || Fatal "'$1' requires an argument."
+            FILE_FLAG='true'
             FILE_TO_PARSE=$2 && shift 1
 
             # shdwfilter needs both passwd and shadow files
@@ -174,8 +176,8 @@ done
 #
 # populate *_CONTENTS, either from piped input or file(s)
 #
-# TODO: if -f was set, no piped input should be parsed
-if [ -p /dev/stdin ]; then # piped input
+# only parse piped input if no file was explicitly set
+if [ "$FILE_FLAG" != 'true' ] && [ -p /dev/stdin ]; then # piped input
     [ -z "${SCRIPT_NAME##shdwfilter*}" ] && Fatal "'shdwfilter' cannot handle piped input."
     while read P_LINE; do
         FILE_CONTENTS="${FILE_CONTENTS:+${FILE_CONTENTS}${NEWLINE}}${P_LINE}"
