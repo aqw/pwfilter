@@ -21,7 +21,6 @@
 .Op Fl f Ar filename Op Ar filename
 .Op Fl i Ar ID ...
 .Op Fl I Ar ID ID
-.Op Fl s
 .Ar ...
 .
 .Sh DESCRIPTION
@@ -66,9 +65,6 @@ command\[hy]line options and then exit.
 Include these Specific ID(s).
 .It Fl I , Fl Fl range Ar ID ID
 Include this range of IDs.
-.It Fl s , Fl Fl suppress
-Don't error if shdwfilter cannot find an entry in the shadow file for a desired
-ID that does exist in the passwd file.
 .It Fl V , Fl Fl version
 Print the version number and exit.
 .El

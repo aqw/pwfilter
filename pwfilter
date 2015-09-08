@@ -29,9 +29,7 @@ FILE_TO_PARSE=''
 FILE_CONTENTS=''
 SHADOW_TO_PARSE=''
 SHADOW_CONTENTS=''
-
 FILE_FLAG='false'
-SUPPRESS_FLAG='false'
 
 ############
 ## FUNCTIONS
@@ -43,7 +41,7 @@ $SCRIPT_NAME v${VERSION}
 
 Syntax:
 $SCRIPT_NAME [-h] [-V] | ID ... | [-a ID] [-e ID ...] [-E ID ID]
-         [-f filename [filename]] [-i ID ...] [-I ID ID] [-s] ...
+         [-f filename [filename]] [-i ID ...] [-I ID ID] ...
 
 OPTIONS:
   -a, --at-and-above ID          = Include IDs above and including this number
@@ -54,7 +52,6 @@ OPTIONS:
   -h, --help                     = Print this help and exit
   -i, --include ID ...           = Include these Specific ID(s)
   -I, --range ID ID              = Include this range of IDs
-  -s, --suppress                 = Don't error if an inconsistency is found
   -V, --version                  = Print the version number and exit
 
 EOF
@@ -237,7 +234,6 @@ for F_LINE in $FILE_CONTENTS; do
             # believe it or not, the above is actually ~1.4x faster than:
             # [ -z "${S_LINE##${user_name}:*}" ]
         done
-        [ "$SUPPRESS_FLAG" = 'false' ] && Fatal "'$user_name' ('$the_id') does not exist in the shadow file."
     else # password- or group-filter
         printf '%s\n' "$F_LINE"
     fi
