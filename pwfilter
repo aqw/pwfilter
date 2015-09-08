@@ -150,22 +150,6 @@ while [ -n "$1" ]; do
             Help
             exit 0
             ;;
-        '-V'|'--version')
-            printf '%s v%s\n' "$SCRIPT_NAME" "$VERSION"
-            exit 0
-            ;;
-        '-I'|'--range'|'-E'|'--exclude-range')
-            [ -n "${2##-*}" ] && [ -n "${3##-*}" ] || Fatal "'$1' requires two arguments."
-            IsInt "$2" && IsInt "$3" || Fatal "Both '$2' and '$3' must be integers."
-            [ $2 -le $3 ] || Fatal "'$2' must be <= '$3'."
-
-            if [ "$1" = '--range' ] || [ "$1" = '-I' ] ; then # include range
-                INCLUDE_RANGE="${INCLUDE_RANGE:+${INCLUDE_RANGE}${NEWLINE}}${2}-${3}"
-            else # exclude range
-                EXCLUDE_RANGE="${EXCLUDE_RANGE:+${EXCLUDE_RANGE}${NEWLINE}}${2}-${3}"
-            fi
-            shift 2
-            ;;
         '-i'|'--include') # specific IDs to include
             [ -n "${2##-*}" ] || Fatal "'$1' requires an argument."
             while IsInt "$2"; do
@@ -180,6 +164,18 @@ while [ -n "$1" ]; do
                 shift 1
             done
             ;;
+        '-I'|'--range'|'-E'|'--exclude-range')
+            [ -n "${2##-*}" ] && [ -n "${3##-*}" ] || Fatal "'$1' requires two arguments."
+            IsInt "$2" && IsInt "$3" || Fatal "Both '$2' and '$3' must be integers."
+            [ $2 -le $3 ] || Fatal "'$2' must be <= '$3'."
+
+            if [ "$1" = '--range' ] || [ "$1" = '-I' ] ; then # include range
+                INCLUDE_RANGE="${INCLUDE_RANGE:+${INCLUDE_RANGE}${NEWLINE}}${2}-${3}"
+            else # exclude range
+                EXCLUDE_RANGE="${EXCLUDE_RANGE:+${EXCLUDE_RANGE}${NEWLINE}}${2}-${3}"
+            fi
+            shift 2
+            ;;
         '-f'|'--file') # file to parse
             [ -n "${2##-*}" ] || Fatal "'$1' requires an argument."
             FILE_FLAG='true'
@@ -193,6 +189,10 @@ while [ -n "$1" ]; do
             ;;
         '-s'|'--suppress')
             SUPPRESS_FLAG='true'
+            ;;
+        '-V'|'--version')
+            printf '%s v%s\n' "$SCRIPT_NAME" "$VERSION"
+            exit 0
             ;;
         *)
             Fatal "'$1' is not a valid '$SCRIPT_NAME' option.";;
