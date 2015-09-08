@@ -210,11 +210,11 @@ if [ "$FILE_FLAG" != 'true' ] && [ -p /dev/stdin ]; then # piped input
         FILE_CONTENTS="${FILE_CONTENTS:+${FILE_CONTENTS}${NEWLINE}}${P_LINE}"
     done
 else # read in the appropriate file(s)
-    [ -r "$FILE_TO_PARSE" ] || Fatal "'$FILE_TO_PARSE' is not readable!"
+    [ -r "$FILE_TO_PARSE" ] || Fatal "'$FILE_TO_PARSE' is not readable."
     FILE_CONTENTS=`cat "$FILE_TO_PARSE"` || Fatal "Failed to 'cat' file: '$FILE_TO_PARSE'"
 
     if [ -z "${SCRIPT_NAME##shdwfilter*}" ]; then
-        [ -r "$SHADOW_TO_PARSE" ] || Fatal "'$SHADOW_TO_PARSE' is not readable!"
+        [ -r "$SHADOW_TO_PARSE" ] || Fatal "'$SHADOW_TO_PARSE' is not readable. Are you sudo/root?"
         SHADOW_CONTENTS=`cat "$SHADOW_TO_PARSE"` || Fatal "Failed to 'cat' shadow file: '$SHADOW_TO_PARSE'"
     fi
 fi
