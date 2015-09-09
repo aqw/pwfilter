@@ -1,0 +1,6 @@
+sys:x:3:
+adm:x:4:
+tty:x:5:
+disk:x:6:
+lp:x:7:
+alex:x:1000:
