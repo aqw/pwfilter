@@ -30,3 +30,5 @@ src:x:40:
 alex:x:1000:
 freebie:x:2000:
 nogroup:x:65534:
+hoch:x:70000:
+uber:x:3147483647

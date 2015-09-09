@@ -5,3 +5,5 @@ irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
 alex:x:1000:1000:alex,,,:/home/alex:/usr/bin/zsh
 freebie:x:2000:2000:freebie,,,:/home/freebie:/bin/bash
 nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+hoch:x:70000:70000:hoch,,,:/home/hoch:/bin/mksh
+uber:x:3147483647:3147483647:uber,,,:/home/uber:/usr/sbin/nologin
