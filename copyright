@@ -1,0 +1,7 @@
+Files: *
+Copyright: 2015, Alex Waite
+License: BSD-3-Clause
+
+Files: tests/sharness/*
+Copyright: 2011-2015, Mathias Lafeldt; see sharness project for more details
+License: GPL-2
