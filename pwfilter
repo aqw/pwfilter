@@ -3,6 +3,9 @@
 # This file is licensed under the BSD-3-Clause license.
 # See the AUTHORS and LICENSE files for more information.
 
+# Put zsh in POSIX mode
+[ -n "${ZSH_VERSION-}" ] && emulate -R sh
+
 ############
 ## Variables
 ############
@@ -13,7 +16,7 @@ readonly SCRIPT_NAME=${0##*/}
 # to spawning subshells :-/
 readonly NEWLINE='
 '
-readonly ORIG_IFS=$IFS
+ORIG_IFS=$IFS
 IFS=$NEWLINE
 
 INCLUDE_RANGE=''
