@@ -16,4 +16,8 @@ test_expect_success "sans-option - multiple IDs" "
     test_cmp ../gs02.out gs02.gen
 "
 
+test_expect_success "Sans options must be first" "
+    test_must_fail $CMD_F 1000 39
+"
+
 test_done

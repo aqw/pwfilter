@@ -26,4 +26,8 @@ test_expect_success "--range everything" "
     test_cmp ../test.group gr04.gen
 "
 
+test_expect_success "Two arguments are required" "
+    test_must_fail $CMD_F -I 0
+"
+
 test_done

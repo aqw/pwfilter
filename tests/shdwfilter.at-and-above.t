@@ -15,4 +15,12 @@ test_expect_success "-a everything" "
     test_cmp ../test.shadow sa02.gen
 "
 
+test_expect_success "Only one argument allowed" "
+    test_must_fail $CMD_F -a 22 39
+"
+
+test_expect_success "Argument must be an integer" "
+    test_must_fail $CMD_F -a alex
+"
+
 test_done

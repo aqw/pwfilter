@@ -15,4 +15,8 @@ test_expect_success "sans-option - multiple IDs" "
     test_cmp ../ss02.out ss02.gen
 "
 
+test_expect_success "Sans options must be first" "
+    test_must_fail $CMD --file ../test.passwd ../test.shadow 1000 39
+"
+
 test_done

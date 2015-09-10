@@ -26,4 +26,8 @@ test_expect_success "Exclude overlapping each other" "
     test_cmp ../per04.out per04.gen
 "
 
+test_expect_success "Two arguments are required" "
+    test_must_fail $CMD_F -E 0
+"
+
 test_done
