@@ -10,3 +10,10 @@ the manpage for more information.
 
 If you're interested in helping out, just drop me an email or send a pull
 request. Patches and (constructive) input are always welcome.
+
+## Tests
+
+Tests are written using [sharness](https://github.com/mlafeldt/sharness). To
+run, simply run `make test` in the `tests` directory. To test across the
+numerous shells supported by pwfilter, use the `test_shells.sh` script also
+located in the `tests` directory.
