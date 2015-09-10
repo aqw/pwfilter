@@ -70,25 +70,31 @@ Print the version number and exit.
 .El
 .
 .Sh FILTERING LOGIC
-All IDs are excluded by default. Thus, running
+The order in which options are defined does not matter. Rather, each option type
+has a fixed priority. All IDs are excluded by default. Thus, running
 .Nm
-with no arguments will result in no output.
-Exclude always wins over include and specific IDs always win over ranges. Thus,
-in descending order of priority:
+with no arguments will result in no output. Exclude wins over include, and
+specific IDs always win over ranges. Thus, in descending order of priority:
 .Pp
 .Bl -dash -compact -offset 4n
 .It
 exclude ID
+.Pq Fl e
 .It
 include ID
+.Pq Fl i
 .It
 exclude range
+.Pq Fl E
 .It
 include range
+.Pq Fl I
 .It
 include at\-and\-above
+.Pq Fl a
 .It
 exclude all
+.Pq default
 .El
 .
 .Sh EXIT STATUS
