@@ -36,8 +36,8 @@ expanded range to match user ids in other directory services.
 
 POSIX states that shell integers must be a signed long; thus, on 32-bit systems
 it's 2147483647 (which is less than 4294967295). Further complicating this, mksh
-limits integers to 32-bit regardless of the architecture, while shells provide
-64-bit integers on 32-bit systems.
+limits integers to 32-bit regardless of the architecture, while other shells
+go so far as to provide 64-bit integers on 32-bit systems.
 
 Thus, before using pwfilter with UIDs > 2147483647 --- especially on 32-bit
 systems --- please make sure your shell-of-choice supports 64-bit integers.
