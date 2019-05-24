@@ -1,6 +1,10 @@
 Files: *
 Copyright: 2015, Alex Waite
-License: BSD-3-Clause
+License: ISC
+
+Files: *.8
+Copyright: 2015, Alex Waite
+License: CC-BY-SA
 
 Files: tests/sharness/*
 Copyright: 2011-2015, Mathias Lafeldt; see sharness project for more details

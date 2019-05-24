@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This file is licensed under the BSD-3-Clause license.
+# This file is licensed under the ISC license.
 # See the AUTHORS and LICENSE files for more information.
 
 # See the PORTABILITY file for more information about why some Bourne shells
